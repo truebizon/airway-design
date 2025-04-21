@@ -1,0 +1,125 @@
+openapi: 3.0.0
+info:
+  title: 機体情報候補リストの取得(A-1-2-8-2) API
+  version: 1.0.0
+  description: 航路設計(A-1-2)において、航路を使用可能な機体として選択可能な機体候補リストを返却する。
+tags:
+  - name: Aircraft
+    description: 機体情報候補リストの取得(A-1-2-8-2)のコントローラクラス。
+paths:
+  /airway-design/aircraft:
+    get:
+      summary: 機体情報候補リスト取得
+      description: 航路を使用可能な機体として選択可能な機体候補リストを返却する。
+      operationId: getAircraft
+      tags:
+        - Aircraft
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AircraftEntity"
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+components:
+  schemas:
+    AircraftEntity:
+      type: object
+      description: 機体候補リストのresponse用Entity
+      properties:
+        aircraft:
+          type: array
+          items:
+            type: object
+            properties:
+              aircraftInfoId:
+                type: integer
+                description: 機体情報ID
+                x-baseName: aircraft_info_id
+              maker:
+                type: string
+                description: 製造メーカー名
+                x-baseName: maker
+                example: XXXXX
+              modelNumber:
+                type: string
+                description: 型式（モデル）
+                x-baseName: model_number
+                example: XXXXX
+              name:
+                type: string
+                description: 機種名
+                x-baseName: name
+                example: 機体1
+              type:
+                type: string
+                description: 機体種別
+                x-baseName: type
+                example: 回転翼航空機（ヘリコプター）
+              ip:
+                type: string
+                description: IP番号（防水・防塵性能を表すIPコード）
+                x-baseName: ip
+                example: IP68
+              length:
+                type: integer
+                description: 機体長
+                x-baseName: length
+                example: 950
+              weight:
+                type: integer
+                description: 重量
+                x-baseName: weight
+                example: 3000
+              maximumTakeoffWeight:
+                type: integer
+                description: 最大離陸重量
+                x-baseName: maximum_takeoff_weight
+                example: 4000
+              maximumFlightTime:
+                type: integer
+                description: 最大飛行時間
+                x-baseName: maximum_flight_time
+                example: 30
+              deviationRange:
+                type: integer
+                description: 逸脱範囲
+                x-baseName: deviation_range
+                example: 1
+              fallingModel:
+                type: string
+                description: 落下モデル
+                x-baseName: falling_model
+                example: ParachuteModelParameters.csv
+    ErrorResponseEntity:
+      type: object
+      description: エラー時のResponse用Entity
+      properties:
+        code:
+          type: string
+          description: エラーコード
+          example: "500"
+        message:
+          type: string
+          description: エラーメッセージ
+          example: "サーバーエラーが発生しました"
+        description:
+          type: string
+          description: 詳細
+          example: "外部システムに接続できませんでした"
+  responses:
+    '400':
+      description: パラメータエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseEntity'
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseEntity'

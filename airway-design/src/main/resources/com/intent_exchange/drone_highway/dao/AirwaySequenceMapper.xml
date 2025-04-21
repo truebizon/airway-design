@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.AirwaySequenceMapper">
+	<select id="selectDespersionNodeIdSeqNextVal"  resultType="java.lang.Integer">
+	    select nextval ('despersion_node_id_seq')
+	</select>
+	<select id="selectAirwayDeterminationIdSeqNextVal"  resultType="java.lang.Integer">
+	    select nextval ('airway_determination_id_seq')
+	</select>
+	<select id="selectMappingJunctionSectionIdSeqNextVal"  resultType="java.lang.Integer">
+	    select nextval ('mapping_junction_section_id_seq')
+	</select>
+	<select id="selectMappingDroneportSectionIdSeqNextVal"  resultType="java.lang.Integer">
+	    select nextval ('mapping_droneport_section_id_seq')
+	</select>
+  
+  <select id="selectAirwayCompatibleModelsIdSeqNextVal" resultType="java.lang.Integer">
+    select nextval ('airway_compatible_models_id')
+  </select>
+  
+  <select id="selectFallSpaceIdSeqNextVal" resultType="java.lang.Integer">
+    select nextval ('fall_space_id_seq')
+  </select>
+  
+</mapper>

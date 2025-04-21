@@ -1,0 +1,14 @@
+機体情報ID,製造メーカー名,型式,機種名,機体種別,IP番号,機体長,重量,最大離陸重量,最大飛行時間,逸脱範囲,落下モデル
+1,メーカー1,型番1_1,機体1,回転翼航空機（ヘリコプター）,IP68,950,1000,1500,30,1,ParachuteModelParameters.csv
+2,メーカー1,型番1_2,機体2,回転翼航空機（ヘリコプター）,IP68,950,1000,1500,30,1,ParachuteModelParameters.csv
+3,メーカー1,型番1_3,機体3,回転翼航空機（マルチローター）,IP68,950,1000,1500,30,1,ParachuteModelParameters.csv
+4,メーカー1,型番1_4,機体4,回転翼航空機（マルチローター）,IP68,950,1000,1500,30,1,ParachuteModelParameters.csv
+5,メーカー2,型番2_1,機体5,回転翼航空機（ヘリコプター）,IP68,950,1000,1500,30,1,BulletModelParameters.csv
+6,メーカー2,型番2_2,機体6,回転翼航空機（ヘリコプター）,IP68,950,1000,1500,30,1,BulletModelParameters.csv
+7,メーカー2,型番2_3,機体7,回転翼航空機（マルチローター）,IP68,950,1000,1500,30,1,BulletModelParameters.csv
+8,メーカー2,型番2_4,機体8,回転翼航空機（マルチローター）,IP68,950,1000,1500,30,1,BulletModelParameters.csv
+9,メーカー3,型番3_1,機体9,飛行機,IP68,2150,9200,10200,40,1,StaticBufferModelParameters.csv
+10,メーカー4,型番4_1,機体10,回転翼航空機（マルチローター）,IP68,1700,10000,25000,35,1,BallisticBufferModelParameters.csv
+11,メーカー4,型番4_2,機体11,回転翼航空機（マルチローター）,IP43,637,1720,2000,25,1,BallisticBufferModelParameters.csv
+12,メーカー5,型番5_1,機体12,回転翼航空機（マルチローター）,IP45,810,6300,9000,17,1,SimpleWindModelParameters.csv
+13,メーカー6,型番6_1,機体13,回転翼航空機（マルチローター）,IP53,440,898,1264,32,1,BulletModelParameters.csv

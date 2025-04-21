@@ -1,0 +1,262 @@
+openapi: '3.0.3'
+info:
+  title: 航路情報一覧取得API
+  description: 航路画定(A-1-2)から、航路情報一覧を返却する。
+  version: '0.0.1'
+tags:
+  - name: 航路情報一覧取得
+paths:
+  /airway-design/airway-list:
+    get:
+      summary: 航路情報一覧取得(ポート管理画面からのリクエスト)
+      description: ドローン航路システムから、地図上の指定された範囲内の航路情報の一覧を返却する。<br>
+                   指定された範囲に航路情報がない場合、空の配列を返却する。
+      operationId: AirwayListGet
+      tags:
+        - 航路情報一覧取得
+      parameters:
+        - name: point1
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "139.55,35.3"
+          description: 地図上の指定範囲の座標１（南西側）
+        - name: point2
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "139.75,35.3"
+          description: 地図上の指定範囲の座標２（南東側）
+        - name: point3
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "139.75,34.3"
+          description: 地図上の指定範囲の座標３（北東側）
+        - name: point4
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "139.55,34.3"
+          description: 地図上の指定範囲の座標４（北西側）
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/airwayEntity"
+        '400':
+          description: |           
+            point1,point2,point3,point4のいずれかが指定されていない場合に返却する。
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+
+components:
+  schemas:
+    AirwayListPoints:
+      type: object
+      properties:
+        point1:
+          type: string
+        point2:
+          type: string
+        point3:
+          type: string
+        point4:
+          type: string
+    AirwayListRequestEntity:
+      type: object
+      description: 航路情報一覧取得API(ポート管理画面からのリクエスト)用のentity
+      properties:
+        point1:
+          type: string
+          x-baseName: point1
+          example: "139.55,35.3"
+          description: 地図上の指定範囲の座標１（南西側）
+        point2:
+          type: string
+          x-baseName: point2
+          example: "139.75,35.3"
+          description: 地図上の指定範囲の座標２（南東側）
+        point3:
+          type: string
+          x-baseName: point3
+          example: "139.75,34.3"
+          description: 地図上の指定範囲の座標３（北東側）
+        point4:
+          type: string
+          x-baseName: point4
+          example: "139.55,34.3"
+          description: 地図上の指定範囲の座標４（北西側）
+      required:
+        - point1
+        - point2
+        - point3
+        - point4
+    airwayConditions:
+      type: object
+      properties:
+       airwayId:
+         type : array
+         items:
+           $ref: "#/components/schemas/airwayId"
+       all:
+         type: boolean
+         default: false
+    airwayId:
+      type: string
+      description: 航路情報を指すユニークID
+    airwayEntity:
+      type: object
+      description: 航路
+      properties:
+        airway:
+          type: object
+          properties:
+            airwayAdministratorId:
+              type: string
+              description: 航路運営者ID
+            airways:
+              type: array
+              items:
+                $ref: "#/components/schemas/airwaysEntity"
+    airwaysEntity:
+      properties:
+        airwayId:
+          type: string
+          description: 航路ID
+        airwayName:
+          type: string
+          description: 航路名
+        businessNumber:
+          type: string
+          description: 事業者番号
+        airwayJunctions:
+          type: array
+          description: ジャンクション
+          items:
+            $ref: "#/components/schemas/airwayJunctionsEntity"
+        airwaySections:
+          type: array
+          items:
+            $ref: "#/components/schemas/airwaySectionsEntity"
+    airwayJunctionsEntity:
+      properties:
+        airwayJunctionId:
+          type: string
+          description: ジャンクションID
+        name:
+          type: string
+          description: ジャンクション名
+        type:
+          type: string
+          description: GeoJsonにおけるtypeオブジェクト。Feture固定。
+        airways:
+          type: array
+          description: ジャンクション内の落下空間に描かれる航路/航路逸脱領域の位置座標
+          items:
+            properties:
+              airway:
+                type: object
+                description: ジャンクション内の落下空間に描かれる航路の位置座標
+                properties:
+                  geometry:
+                    type: object
+                    description: GeoJsonにおけるgeometryオブジェクト
+                    properties:
+                      type:
+                        type: string
+                        description: GeoJsonにおけるgeometryのtype。Polygon固定。
+                        example: Polygon
+                      coordinates:
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            type: number
+                            description: 経度,緯度,高度が各要素に入る配列
+                            example:
+                              - [130.40905191263693, 33.5856554, 140.00]
+              deviation:
+                type: object
+                description: ジャンクション内の落下空間に描かれる航路逸脱領域の位置座標
+                properties:
+                  geometry:
+                    type: object
+                    description: GeoJsonにおけるgeometryオブジェクト
+                    properties:
+                      type:
+                        type: string
+                        description: GeoJsonにおけるgeometryのtype。Polygon固定。
+                        example: Polygon
+                      coordinates:
+                        type: array
+                        items:
+                          type: array
+                          items:
+                            type: number
+                            description: 経度,緯度,高度が各要素に入る配列
+                            example:
+                              - [130.40905191263693, 33.5856554, 140.00]
+    airwaySectionsEntity:
+      description: ジャンクション内の落下空間に描かれる航路/航路逸脱領域の位置座標
+      properties:
+        airwaySectionId:
+          type: string
+          description: 航路区画ID
+        airwaySectionName:
+          type: string
+          description: 航路区画名
+        airwayPointIds:
+          type: array
+          description: 航路区画に接している航路点ID
+          example:
+            - airway_point_1
+            - airway_point_2
+          items:
+            type: string
+    fallToleranceRangeGetRequestEntity:
+      type: object
+      properties:
+        businessNumber:
+          type : string
+          minLength: 1
+          maxLength: 100
+      required: 
+        - businessNumber
+    ErrorResponseEntity:
+      type: object
+      description: エラー時のResponse用Entity
+      properties:
+        code:
+          type: string
+          description: エラーコード
+          example: "500"
+        message:
+          type: string
+          description: エラーメッセージ
+          example: "サーバーエラーが発生しました"
+        description:
+          type: string
+          description: 詳細
+          example: "外部システムに接続できませんでした"
+  responses:
+    '400':
+      description: 入力チェックエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseEntity'
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseEntity'

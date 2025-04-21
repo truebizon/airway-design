@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.AirwaySectionMapper">
+  <resultMap id="BaseResultMap" type="com.intent_exchange.drone_highway.model.AirwaySection">
+    <id column="airway_section_id" jdbcType="INTEGER" property="airwaySectionId" />
+    <result column="airway_id" jdbcType="VARCHAR" property="airwayId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    airway_section_id, airway_id, name, created_at, updated_at
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from airway_section
+    where airway_section_id = #{airwaySectionId,jdbcType=INTEGER}
+  </select>
+  <insert id="insert" parameterType="com.intent_exchange.drone_highway.model.AirwaySection">
+    insert into airway_section
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="airwaySectionId != null">
+        airway_section_id,
+      </if>
+      <if test="airwayId != null">
+        airway_id,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="updatedAt != null">
+        updated_at,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="airwaySectionId != null">
+        #{airwaySectionId,jdbcType=INTEGER},
+      </if>
+      <if test="airwayId != null">
+        #{airwayId,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedAt != null">
+        #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="selectByAirwayId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from airway_section
+    where airway_id = #{airwayId,jdbcType=VARCHAR}
+  </select>
+</mapper>

@@ -1,0 +1,164 @@
+openapi: 3.0.0
+info:
+  title: 日時に依存しない静的な風速の範囲情報の取得(A-1-2-1-3) API
+  version: 1.0.0
+  description: 航路設計(A-1-2)において、航路運営者が航路を配置したいエリアの情報を入力画面で入力した際に呼び出され、該当エリアの日時に依存しない静的な風速の範囲情報を返す。
+tags:
+  - name: RouteDesign
+    description: 日時に依存しない静的な風速の範囲情報の取得(A-1-2-1-3)のコントローラクラス。
+paths:
+  /wind-speed-range-acquisition:
+    post:
+      summary: 日時に依存しない静的な風速の範囲情報の取得
+      description: SDSP(A-1-1-1-2)へエリア情報(風速取得用)を送信し、過去１０年分の風速の範囲情報を受信します。
+      operationId: getWindSpeedRange
+      tags:
+        - RouteDesign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAreaInfoEntity'
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseWindSpeedRangeEntity'
+        '400':
+          description: 入力チェックエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSdspEntity'
+        '404':
+          description: 指定されたエリアが、データベースに存在しない場合に返却する。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSdspEntity'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponseSdspEntity'
+components:
+  schemas:
+    RequestAreaInfoEntity:
+      type: object
+      description: リクエスト用エリア情報
+      required:
+        - areaInfo
+      properties:
+        areaInfo:
+          type: object
+          description: 緯度経度情報を持つGeometry objectのPolygon
+          properties:
+            type:
+              type: string
+              example: "Polygon"
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: number
+                    format: double
+              example: [
+                [
+                  [137.7, 37.8],
+                  [140.7, 37.8],
+                  [140.7, 34.8],
+                  [137.7, 34.8],
+                  [137.7, 37.8]
+                ]
+              ]
+    ResponseWindSpeedRangeEntity:
+      type: array
+      description: 風速範囲情報のリスト
+      items:
+        type: object
+        properties:
+          averageWindSpeed:
+            type: number
+            format: double
+            description: 平均風速
+          maxWindSpeed:
+            type: number
+            format: double
+            description: 最大風速
+          maxInstantWindSpeed:
+            type: number
+            format: double
+            description: 最大瞬間風速
+      example:
+        - averageWindSpeed: 1.0
+          maxWindSpeed: 2.0
+          maxInstantWindSpeed: 3.0
+        - averageWindSpeed: 1.1
+          maxWindSpeed: 2.1
+          maxInstantWindSpeed: 3.1
+        - averageWindSpeed: 1.2
+          maxWindSpeed: 2.2
+          maxInstantWindSpeed: 3.2
+        - averageWindSpeed: 1.3
+          maxWindSpeed: 2.3
+          maxInstantWindSpeed: 3.3
+        - averageWindSpeed: 1.4
+          maxWindSpeed: 2.4
+          maxInstantWindSpeed: 3.4
+        - averageWindSpeed: 1.5
+          maxWindSpeed: 2.5
+          maxInstantWindSpeed: 3.5
+        - averageWindSpeed: 1.6
+          maxWindSpeed: 2.6
+          maxInstantWindSpeed: 3.6
+        - averageWindSpeed: 1.7
+          maxWindSpeed: 2.7
+          maxInstantWindSpeed: 3.7
+        - averageWindSpeed: 1.8
+          maxWindSpeed: 2.8
+          maxInstantWindSpeed: 3.8
+        - averageWindSpeed: 1.9
+          maxWindSpeed: 2.9
+          maxInstantWindSpeed: 3.9
+    ErrorResponseSdspEntity:
+      type: object
+      description: エラー時のResponse用Entity
+      properties:
+        code:
+          type: string
+          description: エラーコード
+          example: "400"
+        message:
+          type: string
+          description: エラーメッセージ
+          example: "入力チェックエラー"
+        description:
+          type: string
+          description: 詳細
+          example: "0 以上の値にしてください"
+  responses:
+    '400':
+      description: 入力チェックエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseSdspEntity'
+    '404':
+      description: 指定されたリソースが見つからないエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseSdspEntity'
+    '500':
+      description: サーバーエラー
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponseSdspEntity'

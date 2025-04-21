@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.AirwayCompatibleModelsMapper">
+  <resultMap id="BaseResultMap" type="com.intent_exchange.drone_highway.model.AirwayCompatibleModels">
+    <id column="airway_compatible_models_id" jdbcType="INTEGER" property="airwayCompatibleModelsId" />
+    <result column="airway_determination_id" jdbcType="INTEGER" property="airwayDeterminationId" />
+    <result column="aircraft_info_id" jdbcType="INTEGER" property="aircraftInfoId" />
+    <result column="maker" jdbcType="VARCHAR" property="maker" />
+    <result column="model_number" jdbcType="VARCHAR" property="modelNumber" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="ip" jdbcType="VARCHAR" property="ip" />
+    <result column="length" jdbcType="INTEGER" property="length" />
+    <result column="weight" jdbcType="INTEGER" property="weight" />
+    <result column="maximum_takeoff_weight" jdbcType="INTEGER" property="maximumTakeoffWeight" />
+    <result column="maximum_flight_time" jdbcType="INTEGER" property="maximumFlightTime" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+  </resultMap>
+  <insert id="insert" parameterType="com.intent_exchange.drone_highway.model.AirwayCompatibleModels">
+    insert into airway_compatible_models (airway_compatible_models_id, airway_determination_id, 
+      aircraft_info_id, maker, model_number, 
+      name, type, ip, length, 
+      weight, maximum_takeoff_weight, maximum_flight_time, 
+      created_at, updated_at)
+    values (#{airwayCompatibleModelsId,jdbcType=INTEGER}, #{airwayDeterminationId,jdbcType=INTEGER}, 
+      #{aircraftInfoId,jdbcType=INTEGER}, #{maker,jdbcType=VARCHAR}, #{modelNumber,jdbcType=VARCHAR}, 
+      #{name,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, #{ip,jdbcType=VARCHAR}, #{length,jdbcType=INTEGER}, 
+      #{weight,jdbcType=INTEGER}, #{maximumTakeoffWeight,jdbcType=INTEGER}, #{maximumFlightTime,jdbcType=INTEGER}, 
+      #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP})
+  </insert>
+  <sql id="Base_Column_List">
+    airway_compatible_models_id, airway_determination_id, aircraft_info_id, maker, model_number, 
+    name, type, ip, length, weight, maximum_takeoff_weight, maximum_flight_time, created_at, 
+    updated_at
+  </sql>
+  <select id="selectByAirwayDeterminationId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from airway_compatible_models
+    where airway_determination_id = #{airwayDeterminationId,jdbcType=INTEGER}
+    order by airway_compatible_models_id, airway_determination_id
+  </select>
+</mapper>

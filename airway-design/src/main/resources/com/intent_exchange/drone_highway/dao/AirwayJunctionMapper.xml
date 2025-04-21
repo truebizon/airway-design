@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.AirwayJunctionMapper">
+  <resultMap id="BaseResultMap" type="com.intent_exchange.drone_highway.model.AirwayJunction">
+    <id column="airway_junction_id" jdbcType="INTEGER" property="airwayJunctionId" />
+    <result column="despersion_node_id" jdbcType="INTEGER" property="despersionNodeId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="airway_id" jdbcType="VARCHAR" property="airwayId" />
+    <result column="geometry" jdbcType="OTHER" property="geometry" />
+    <result column="deviation_geometry" jdbcType="OTHER" property="deviationGeometry" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    airway_junction_id, despersion_node_id, name, airway_id, ST_AsGeoJson(geometry) as geometry, ST_AsGeoJson(deviation_geometry) as deviation_geometry, 
+    created_at, updated_at
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from airway_junction
+    where airway_junction_id = #{airwayJunctionId,jdbcType=INTEGER}
+  </select>
+  <insert id="insert" parameterType="com.intent_exchange.drone_highway.model.AirwayJunction">
+    insert into airway_junction
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="airwayJunctionId != null">
+        airway_junction_id,
+      </if>
+      <if test="despersionNodeId != null">
+        despersion_node_id,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="airwayId != null">
+        airway_id,
+      </if>
+      <if test="geometry != null">
+        geometry,
+      </if>
+      <if test="deviationGeometry != null">
+        deviation_geometry,
+      </if>
+      <if test="createdAt != null">
+        created_at,
+      </if>
+      <if test="updatedAt != null">
+        updated_at,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="airwayJunctionId != null">
+        #{airwayJunctionId,jdbcType=INTEGER},
+      </if>
+      <if test="despersionNodeId != null">
+        #{despersionNodeId,jdbcType=INTEGER},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="airwayId != null">
+        #{airwayId,jdbcType=VARCHAR},
+      </if>
+      <if test="geometry != null">
+        ST_GeomFromGeoJson(#{geometry,jdbcType=OTHER}),
+      </if>
+      <if test="deviationGeometry != null">
+        ST_GeomFromGeoJson(#{deviationGeometry,jdbcType=OTHER}),
+      </if>
+      <if test="createdAt != null">
+        #{createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedAt != null">
+        #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <select id="selectByAirwayId" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from airway_junction
+    where airway_id = #{airwayId,jdbcType=VARCHAR}
+    order by airway_id, airway_junction_id
+  </select>
+</mapper>

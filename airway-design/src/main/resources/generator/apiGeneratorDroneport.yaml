@@ -1,0 +1,82 @@
+openapi: 3.0.0
+info:
+  title: ポート情報関連付け API
+  version: 1.0.0
+  description: ドローン航路システムの航路情報とドローンポートの関連付けを行う。
+tags:
+  - name: ポート情報関連付け
+paths:
+ /droneports-mapping:
+   post:
+     summary: 航路情報とドローンポートの関連付け
+     description: |
+      ドローン航路システムの航路情報とドローンポートの関連付けを行う。
+
+      航路区画単位でDELETE → INSERTを行う。
+     tags:
+       - ポート情報関連付け
+     operationId: DronePortsMappingPost
+     requestBody:
+       required: true
+       content:
+         application/json:
+           schema:
+             $ref: "#/components/schemas/dronePortsMappingPostEntity"
+             
+     responses:
+       '201':
+         description: 正常終了
+       '400':
+         description: |
+           パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+           ・必須指定されているパラメータが指定されていない場合
+           
+           ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+       '404':
+         description: |
+           指定された航路ID、航路区画IDがデータベースに存在しない場合に返却する。
+       '500':
+         description: |
+           サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+           
+           ・他のサービスへのネットワークアクセスに失敗した
+           
+           ・サーバ内部でロジックの例外が検出された
+
+
+components:
+  schemas:
+   dronePortsMappingPostEntity:
+     type: object
+     properties:
+       airwayId:
+        type: string
+        description: 航路ID
+       airwaySections:
+        type: array
+        description: 航路区画とポートの組み合わせ
+        items:
+         type: object
+         properties:
+          airwaySectionId:
+           type: string
+           description: 航路区画ID
+          droneportIds:
+           type: array
+           description: |
+                        航路区画に紐づけるドローンポートID。複数指定可
+
+                        未指定もしくは空の場合、航路区画に紐づくポートを解除する。
+           example: 
+           - droneport_1
+           - droneport_2
+           items:
+            type: array
+            items:
+             type: string
+         required: 
+         - airwaySectionId
+     required: 
+       - airwayId
+       - airwaySections

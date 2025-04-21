@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Sample API 出力用
+  version: 1.0.0
+tags:
+  - name: Sample
+    description: サンプルのコントローラクラス。
+  - name: SampleWebClient
+    description: サンプルのWebクライアントコントローラークラス。
+paths:
+  /sample/{companyId}:
+    get:
+      summary: 指定された会社IDの従業員を取得します。
+      description: 指定された会社IDの従業員を取得します。
+      operationId: getEmployee
+      tags:
+        - Sample
+      parameters:
+        - $ref: "#/components/parameters/companyId"
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEmployeeListEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+  /sample/employee:
+    post:
+      summary: 新しい従業員を作成します。
+      description: 新しい従業員を作成します。
+      operationId: createEmployee
+      tags:
+        - Sample
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamplePostRequestEntity'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+    put:
+      summary: 従業員を更新します。
+      description: 従業員を更新します。
+      operationId: updateEmployee
+      tags:
+        - Sample
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamplePutRequestEntity'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+    delete:
+      summary: 従業員を削除します。
+      description: 従業員を削除します。
+      operationId: deleteEmployee
+      tags:
+        - Sample
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SampleDeleteRequestEntity'
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+  /sample/web/{companyId}:
+    get:
+      summary: 指定された会社IDの従業員を取得します。
+      description: 指定された会社IDの従業員を取得します。
+      operationId: getData
+      tags:
+        - SampleWebClient
+      parameters:
+        - $ref: "#/components/parameters/companyId"
+      responses:
+        '200':
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEmployeeListEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+  /sample/web/employee:
+    post:
+      summary: 新しい従業員を作成します。
+      description: 新しい従業員を作成します。
+      operationId: postData
+      tags:
+        - SampleWebClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SamplePostRequestEntity'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SampleResultEntity'
+        '400':
+          description: 入力チェックエラー
+          $ref: '#/components/responses/400'
+        '500':
+          description: サーバーエラー
+          $ref: '#/components/responses/500'
+components:
+  parameters:
+    companyId:
+      name: companyId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: 会社ID
+  schemas:
+    SampleResultEmployeeListEntity:
+      type: object
+      description: サンプルの従業員Entity
+      properties:
+        employeeList:
+          type: array
+          description: 従業員情報
+          items    :
+            $ref: '#/components/schemas/SampleEmployeeEntity'
+    SampleEmployeeEntity:
+      type: object
+      properties:
+          companyName:
+            type: string
+            description: 会社名
+            example: "会社"
+          deployName:
+            type: string
+            description: 部署名
+            example: "部署名"
+          employeeName:
+            type: string
+            description: 社員名
+            example: "山田 太郎"
+    SampleResultEntity:
+      type: object
+      description: 共通Response用Entity
+      properties:
+        result:
+          type: boolean
+          description: 結果
+          example: true
+        code:
+          type: string
+          description: コード
+          example: "200"
+        message:
+          type: string
+          description: メッセージ
+          example: ""
+        description:
+          type: string
+          description: 詳細
+          example: ""
+    SamplePostRequestEntity:
+      type: object
+      description: sampleリクエスト(POST)用のentity
+      properties:
+        companyId:
+          type: integer
+          description: 会社ID
+          minimum: 0
+        deployId:
+          type: integer
+          description: 部署ID
+          minimum: 0
+        employeeName:
+          type: string
+          description: 社員名
+      required:
+        - companyId
+        - deployId
+        - employeeName
+    SamplePutRequestEntity:
+      type: object
+      description: sampleリクエスト(PUT)用のentity
+      properties:
+        companyId:
+          type: integer
+          description: 会社ID
+          minimum: 0
+        employeeId:
+          type: integer
+          description: 社員ID
+          minimum: 0
+        employeeName:
+          type: string
+          description: 社員名
+      required:
+        - companyId
+        - employeeId
+        - employeeName
+    SampleDeleteRequestEntity:
+      type: object
+      description: sampleリクエスト(PUT)用のentity
+      properties:
+        companyId:
+          type: integer
+          description: 会社ID
+          minimum: 0
+        employeeId:
+          type: integer
+          description: 社員ID
+          minimum: 0
+      required:
+        - companyId
+        - employeeId

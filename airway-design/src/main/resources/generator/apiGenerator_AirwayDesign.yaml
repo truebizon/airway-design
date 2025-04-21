@@ -1,0 +1,995 @@
+openapi: '3.0.3'
+info:
+  title: 航路の画定(A-1-2) API
+  description: 航路の設計時に使用するAPIを提供する。
+  version: '0.0.1'
+servers:
+  - url: http://localhost:8080/drone-highway
+tags:
+  - name: 航路情報
+  - name: 最大落下許容範囲
+  - name: 落下空間
+paths:
+  /airway-design/airway:
+    get:
+      summary: 航路情報取得
+      description: ドローン航路システムから、指定された航路IDをキーにした航路情報を返却する。
+      tags:
+        - 航路情報
+      operationId: AirwayGet
+      parameters:
+        - name: airwayId
+          in: query
+          description: "航路ID 取得する航路のID。フラグを指定しない場合は必須。"
+          schema:
+            type : array
+            items:
+              $ref: "#/components/schemas/airwayId"
+        - name: all
+          in: query
+          required: false
+          description: |
+            全航路取得 全件取得を行うかを指示するフラグ値。
+
+            trueの場合はairwayIdは無視する。
+          schema:
+            type : boolean
+            default: false
+        - name: flightPurpose
+          in: query
+          description: 飛行目的（オプション検索）
+          schema:
+            type: array
+            items:
+              type: string
+        - name: determinationDateFrom
+          in: query
+          description: 画定履歴の開始日（オプション検索）
+          schema:
+            type: string
+            format: date-time
+            example: '2020-01-31T00:00:00Z'
+        - name: determinationDateTo
+          in: query
+          description: 画定履歴の終了日（オプション検索）
+          schema:
+            type: string
+            format: date-time
+            example: '2020-01-31T00:00:00Z'
+        - name: businessNumber
+          in: query
+          description: 事業者番号 （オプション検索）
+          schema:
+            type: string
+        - name: areaName
+          in: query
+          description: エリア名（オプション検索）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/airwayEntity"
+        '400':
+          description: |           
+            airwayIdが未指定且つ、allフラグがfalseの場合
+        '404':
+          description: 指定された航路IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+    post:
+      summary: 航路登録
+      description: 画面で登録された航路情報を保存する。
+      tags:
+        - 航路情報
+      operationId: AirwayPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/airwaysPostRequestEntity"
+      responses:
+        '201':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/airwaysPostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合
+        '404':
+          description: |
+             指定された航路画定IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+    delete:
+      summary: 航路情報削除
+      description: ドローン航路システムから、航路を削除する。
+      tags:
+        - AirwayDesign
+      operationId: AirwayDelete
+      parameters:
+        - name: airwayId
+          in: query
+          description: 航路ID
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 250
+      responses:
+        '204':
+          description: 正常終了
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合
+        '404': 
+          description: |
+            指定された航路IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+
+            ・他のサービスへのネットワークアクセスに失敗した
+
+            ・サーバ内部でロジックの例外が検出された
+
+  /airway-design/fall-tolerance-range:
+    get:
+      summary: 最大落下許容範囲取得
+      description: ドローン航路システムから、最大落下許容範囲情報を返却する。
+      tags:
+        - 最大落下許容範囲
+      operationId: FallToleranceRangeGet
+      parameters:
+        - name: businessNumber
+          in: query
+          description: 事業者番号
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallToleranceRangeGetResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+    post:
+      summary: 最大落下許容範囲登録
+      description: 最大落下許容範囲をドローン航路システムに登録する。
+      tags:
+        - 最大落下許容範囲
+      operationId: FallToleranceRangePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallToleranceRangePostRequestEntity"
+      responses:
+        '201':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallToleranceRangePostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+  /airway-design/fall-space:
+    post:
+      summary: 落下空間取得
+      description: |
+        指定された最大落下許容範囲ID, 機体グループリストを元にデジタル地上リスク評価サービスから落下空間を取得し、ドローン航路システムに落下空間を登録する。
+  
+        作成中の航路を一意に表す航路画定のIDを返却する。
+      tags:
+        - 落下空間
+      operationId: FallSpacePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallSpacePostRequestEntity"
+              
+      responses:
+        '201':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallSpacePostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+  /airway-design/fall-space-cross-section:
+    post:
+      summary: 落下空間(断面)取得
+      description: ドローン航路システムから、指定された落下範囲節を元に落下空間断面の上部の座標リストを返却する。
+      tags:
+        - 落下空間
+      operationId: FallSpaceCrossSectionPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallSpaceCrossSectionPostRequestEntity"
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallSpaceCrossSectionPostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '404':
+          description: |
+            指定された航路画定IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+  /airway-design/aircraft:
+    get:
+      summary: 機体情報候補リスト取得
+      description: 航路を使用可能な機体として選択可能な機体候補リストを返却する。
+      tags:
+        - 機体情報候補リストの取得
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/aircraft"
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+components:
+  schemas:
+    airwayConditions:
+      type: object
+      properties:
+       airwayId:
+         type : array
+         items:
+           $ref: "#/components/schemas/airwayId"
+       all:
+         type: boolean
+         default: false
+    airwayId:
+      type: string
+      description: 航路情報を指すユニークID
+    airwayEntity:
+      type: object
+      description: 航路
+      properties:
+        airway:
+          type: object
+          properties:
+            airwayAdministratorId:
+              type: string
+              description: 航路運営者ID
+            businessNumber:
+              type: string
+              description: 事業者番号
+            airways:
+              type: array
+              items:
+                $ref: "#/components/schemas/airwaysEntity"
+    airwaysEntity:
+      properties:
+        airwayId:
+          type: string
+          description: 航路ID
+        airwayName:
+          type: string
+          description: 航路名
+        flightPurpose:
+          type: string
+          description: 飛行目的
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+        updatedAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+        droneList:
+          description: 航路を利用可能なドローンの機体種別IDのリスト
+          type: array
+          example:
+          - 0
+          - 1
+          items:
+            type: number
+        airwayJunctions:
+          type: array
+          description: ジャンクション
+          items:
+            $ref: "#/components/schemas/airwayJunctionsEntity"
+        airwaySections:
+          type: array
+          items:
+            $ref: "#/components/schemas/airwaySectionsEntity"
+    airwayJunctionsEntity:
+      properties:
+        airwayJunctionId:
+          type: string
+          description: ジャンクションID
+        name:
+          type: string
+          description: ジャンクション名
+        type:
+          type: string
+          description: GeoJsonにおけるtypeオブジェクト。Feture固定。
+        airways:
+          type: array
+          description: 落下空間の断面に描かれる航路/航路逸脱領域の位置座標
+          items:
+            properties:
+              airway:
+                type: object
+                description: 落下空間の断面に描かれる航路の位置座標
+                properties:
+                  geometry:
+                    type: object
+                    description: GeoJsonにおけるgeometryオブジェクト
+                    properties:
+                      type:
+                        type: string
+                        description: GeoJsonにおけるgeometryのtype。Polygon固定。
+                        example: Polygon
+                      coordinates:
+                        type: array
+                        description: 座標 配列内は経度,緯度,高度順で記述
+                        example:
+                          - [139.84425094162697,35.65649757318167,100]
+                          - [139.8506696707106,35.65611144123251,100]
+                          - [139.85103098834156,35.67572492318939,100]
+                          - [139.8603064948997,35.69311183099994,100]
+                          - [139.85495492073812,35.69407775293554,100]
+                        items:
+                          type: array
+                          items:
+                            type: number
+              deviation:
+                type: object
+                description: 落下空間の断面に描かれる航路逸脱領域の位置座標
+                properties:
+                  geometry:
+                    type: object
+                    description: GeoJsonにおけるgeometryオブジェクト
+                    properties:
+                      type:
+                        type: string
+                        description: GeoJsonにおけるgeometryのtype。Polygon固定。
+                        example: Polygon
+                      coordinates:
+                        type: array
+                        description: 座標 配列内は経度,緯度,高度順で記述
+                        example:
+                          - [139.84425094162697,35.65649757318167,100]
+                          - [139.8506696707106,35.65611144123251,100]
+                          - [139.85103098834156,35.67572492318939,100]
+                          - [139.8603064948997,35.69311183099994,100]
+                          - [139.85495492073812,35.69407775293554,100]
+                        items:
+                          type: array
+                          items:
+                            type: number
+    airwaySectionsEntity:
+      description: 落下空間の断面に描かれる航路/航路逸脱領域の位置座標
+      properties:
+        airwaySectionId:
+          type: string
+          description: 航路区画ID
+        airwaySectionName:
+          type: string
+          description: 航路区画名
+        airwayJunctionIds:
+          type: array
+          description: 航路区画に接している航路点ID
+          example:
+            - airway_point_1
+            - airway_point_2
+          items:
+            type: string
+        droneportIds:
+          type: array
+          description: 航路区画にて使用できるドローンポートID
+          example:
+            - droneport_1
+            - droneport_2
+          items:
+            type: string
+    airwayDeleteRequestEntity:
+      type: object
+      properties:
+        airwayId:
+          type: string
+          minLength: 1
+          maxLength: 250
+          description: 航路ID
+      required:
+        - airwayId
+    fallToleranceRangeGetRequestEntity:
+      type: object
+      properties:
+        businessNumber:
+          type : string
+          minLength: 1
+          maxLength: 200
+      required: 
+        - businessNumber
+            
+    fallToleranceRangePostRequestEntity:
+      type: object
+      properties:
+        businessNumber:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+        airwayOperatorId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 航路運営者ID
+        name:
+          type: string
+          maxLength: 200
+          description: 名称
+        areaName:
+          type: string
+          maxLength: 200
+          description: エリア名称 
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「Polygon」を設定
+              example: Polygon
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度順で記述
+              items:
+                type: array
+                example:
+                - [139.84425094162697,35.65649757318167]
+                - [139.8506696707106,35.65611144123251]
+                - [139.85103098834156,35.67572492318939]
+                - [139.8603064948997,35.69311183099994]
+                - [139.85495492073812,35.69407775293554]
+                - [139.84484594816934,35.67678697870946]
+                - [139.84425094162697,35.65649757318167]
+                items:
+                  type: array
+                  items:
+                    type: number
+          required:
+            - type
+            - coordinates
+      required: 
+        - businessNumber
+        - airwayOperatorId
+        - geometry
+    fallToleranceRangePostResponseEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 登録した際に発行されたID
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        name:
+          type: string
+          maxLength: 200
+          description: 名称
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+      required: 
+        - fallToleranceRangeId
+        - createdAt
+    fallToleranceRangeGetResponseEntity:
+      type: object
+      properties:
+        fallToleranceRanges:
+          type: array
+          description: 最大落下許容範囲
+          items:
+            $ref: "#/components/schemas/fallToleranceRangeGetResponseItemEntity"
+      required:
+        - fallToleranceRanges
+    fallToleranceRangeGetResponseItemEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 最大落下許容範囲ID
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 名称
+        areaName:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: エリア名称
+        airwayOperatorId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: エリア名称
+        airwayIdUse:
+          type: array
+          description: 使用中航路ID
+          items:
+            type: string
+            example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 Polygon固定
+              example: Polygon
+            coordinates:
+                type: array
+                description: 座標 配列内は経度,緯度,高度順で記述
+                items:
+                  type: array
+                  example:
+                    - [139.84425094162697,35.65649757318167]
+                    - [139.8506696707106,35.65611144123251]
+                    - [139.85103098834156,35.67572492318939]
+                    - [139.8603064948997,35.69311183099994]
+                    - [139.85495492073812,35.69407775293554]
+                    - [139.84484594816934,35.67678697870946]
+                    - [139.84425094162697,35.65649757318167]
+                  items:
+                    type: array
+                    items:
+                      type: number
+          required:
+            - type
+            - coordinates
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+        updatedAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+      required:
+        - fallToleranceRangeId
+        - airwayOperatorId
+        - airwayIdUse
+        - geometry
+        - createdAt
+        - updatedAt
+    fallSpacePostRequestEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          description: 最大落下許容範囲ID
+          minLength: 36
+          maxLength: 36
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        pastMaxWindSpeedAverage	:
+          type: number
+          description: 過去の最大風速平均
+        droneList:
+          type: array
+          description: 機体リスト
+          items:
+            $ref: "#/components/schemas/fallSpacePostRequestDroneEntity"
+      required:
+        - fallToleranceRangeId
+        - pastMaxWindSpeedAverage	
+        - droneList
+    fallSpacePostRequestDroneEntity:
+      type: object
+      properties:
+        maker:
+          type: string
+          description: 製造メーカー名
+          minLength: 1
+          maxLength: 200
+        modelNumber:
+          type: string
+          description: 型式（モデル）
+          minLength: 1
+          maxLength: 200
+        name:
+          type: string
+          description: 機種名
+          minLength: 1
+          maxLength: 200
+        type:
+          type: string
+          description: 機体種別
+          minLength: 1
+          maxLength: 100
+        kinds:
+          type: string
+          description: 機体種類
+          minLength: 1
+          maxLength: 100
+        ip:
+          type: string
+          description: IP番号
+          minLength: 1
+          maxLength: 100
+        length:
+          type: integer
+          description: 機体長
+        weight:
+          type: integer
+          description: 重量
+        maximumTakeoffWeight:
+          type: integer
+          description: 最大離陸重量
+        maximumFlightTime:
+          type: integer
+          description: 最大飛行時間
+      required: 
+        - maker
+        - modelNumber
+        - name
+        - type
+        - kinds
+        - ip
+        - length
+        - weight
+        - maximumTakeoffWeight
+        - maximumFlightTime
+    fallSpacePostResponseEntity:
+      type: object
+      properties:
+        airwayDeterminationId:
+          type: integer
+          description: |
+            航路画定IDを表すID
+
+            作成中の航路を一意に表すID
+
+            以降の航路作成系のAPIで必ず指定する
+      required: 
+        - airwayDeterminationId
+    fallSpaceCrossSectionPostRequestEntity:
+      type: object
+      properties:
+        airwayDeterminationId:
+          type: integer
+          description: 航路画定ID 作成中の航路を一意に表すID
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 LineString固定
+              example: LineString
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度順で記述
+              example: 
+                    - [139.84393417826334,35.64506348565499]
+                    - [139.8485177460986,35.64521500545736]
+              items:
+                type: array
+                items:
+                  type: number
+          required:
+            - type
+            - coordinates
+      required: 
+        - airwayDeterminationId
+        - geometry
+    fallSpaceCrossSectionPostResponseEntity:
+      type: object
+      properties:
+        fallSpaceCrossSectionId:
+          type: integer
+          description: 落下空間(断面)ID
+        data:
+          type: array
+          description: データ
+          example: 
+            - [139.84354370902838,35.66367882233067,100]
+            - [139.84453992240128,35.66366930498516,150]
+            - [139.84458094577673,35.66367406608012,200]
+            - [139.84530177283676,35.663659778755544,100]
+          items: 
+            type: array
+            items:
+              type: number
+      required:
+        - fallSpaceId
+        - data
+    airwaysPostRequestEntity:
+      type: object
+      properties:
+        airwayDeterminationId:
+          type: integer
+          description: 航路画定ID 作成中の航路を一意に表すID
+        airwayName:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 航路名
+        flightPurpose:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 飛行目的
+        airwayParts:
+          description: 航路を構成する、節と航路区画とジャンクションのセットのリスト
+          type: array
+          items:
+            $ref: "#/components/schemas/airwaysPostRequestAirwayPartsEntity"
+      required:
+        - airwayDeterminationId
+        - despersionNode
+        - airwayPoint
+    airwaysPostRequestAirwayPartsEntity:
+      type: object
+      properties:
+        prevAirwayPartsIndex:
+          type: integer
+          description: |
+            接続元になるパーツのインデックス番号
+
+            一直線の航路の場合は1つ前に格納されてるパーツのインデックスを格納
+
+            分岐を含む航路の場合は、適切な前のパーツとなるインデックスを格納する
+            
+            前のパーツが存在しない場合は、NULLを設定する
+        despersionNode:
+          description: 落下範囲節
+          $ref: "#/components/schemas/airwaysPostRequestDespersionNodeEntity"
+        airwayJunction:
+          type: array
+          description: ジャンクション
+          items:
+            $ref: "#/components/schemas/airwaysPostRequestAirwayJunctionEntity"
+        airwaySection:
+          description: 航路区画
+          $ref: "#/components/schemas/airwaysPostRequestAirwaySectionEntity"
+    airwaysPostRequestDespersionNodeEntity:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 名称 落下範囲節の名称
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「LineString」を設定
+              example: LineString
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度,高度順で記述
+              example:
+                - [138.7309, 35.3628]
+                - [138.7309, 35.3628]
+              items:
+                type: array
+                items:
+                  type: number
+          required:
+            - type
+            - coordinates
+        fallSpaceCrossSectionId:
+          type: integer
+          description: 落下空間(断面)取得で返却された、落下空間を一意に示すID
+      required:
+        - geometry
+        - fallSpaceCrossSectionId
+    airwaysPostRequestAirwayJunctionEntity:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 名称 ジャンクションの名称
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「Polygon」を設定
+              example: Polygon
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度,高度順で記述
+              items:
+                type: array
+                example:
+                  - [138.7309, 35.3628, 100]
+                  - [138.8079, 35.1983, 100]
+                  - [138.8079, 35.1983, 50]
+                  - [138.7309, 35.3628, 50]
+                  - [138.7309, 35.3628, 100]
+                items:
+                  type: array
+                  items:
+                    type: number
+          required:
+            - type
+            - coordinates
+        deviationGeometry:
+          type: object
+          description: 逸脱ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「Polygon」を設定
+              example: Polygon
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度,高度順で記述
+              items:
+                type: array
+                example:
+                  - [138.7309, 35.3628, 100]
+                  - [138.8079, 35.1983, 100]
+                  - [138.8079, 35.1983, 50]
+                  - [138.7309, 35.3628, 50]
+                  - [138.7309, 35.3628, 100]
+                items:
+                  type: array
+                  items:
+                    type: number
+          required:
+            - type
+            - coordinates
+      required:
+        - geometry
+        - deviationGeometry
+    airwaysPostRequestAirwaySectionEntity:
+      type: object
+      description: |
+        ジャンクションとジャンクションの間に構成される航路区画
+
+        航路の終端となるパーツの場合は、NULLを設定する
+      properties:
+        name:
+          description: 航路区画名
+          minLength: 0
+          maxLength: 200
+          type: string
+    airwaysPostResponseEntity:
+      type: object
+      description: 登録された航路情報
+      properties:
+        airwayId:
+          description: 航路ID
+          type: string
+    aircraft:
+      type: object
+      description: 機体候補リストのJsonオブジェクト
+      properties:
+        aircraft:
+          type: object
+          properties:
+            aircraft_type:
+              type: string
+              description: 機体種類
+            manufacturer:
+              type: string
+              description: メーカー
+            model:
+              type: string
+              description: 型番
+            size:
+              type: string
+              description: ドローンサイズ
+            weight:
+              type: string
+              description: ドローン重量
+            max_wind_resistance:
+              type: string
+              description: 最大風速耐性

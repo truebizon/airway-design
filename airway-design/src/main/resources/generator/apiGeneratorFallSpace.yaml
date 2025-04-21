@@ -1,0 +1,230 @@
+openapi: '3.0.3'
+info:
+  title: 航路の画定(A-1-2) API
+  description: 航路の設計時に使用するAPIを提供する。
+  version: '0.0.1'
+servers:
+  - url: http://localhost:8080/drone-highway
+tags:
+  - name: FallSpace
+paths:
+  /airway-design/fall-space:
+    post:
+      summary: 落下空間取得
+      description: |
+        指定された最大落下許容範囲ID, 機体グループリストを元にデジタル地上リスク評価サービスから落下空間を取得し、ドローン航路システムに落下空間を登録する。
+  
+        作成中の航路を一意に表す航路画定のIDを返却する。
+      tags:
+        - FallSpace
+      operationId: FallSpacePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallSpacePostRequestEntity"
+              
+      responses:
+        '201':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallSpacePostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '404':
+          description: |
+            指定された最大落下許容範囲IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+  /airway-design/fall-space-cross-section:
+    post:
+      summary: 落下空間(断面)取得
+      description: ドローン航路システムから、指定された落下範囲節を元に落下空間断面の上部の座標リストを返却する。
+      tags:
+        - FallSpace
+      operationId: FallSpaceCrossSectionPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallSpaceCrossSectionPostRequestEntity"
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallSpaceCrossSectionPostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '404':
+          description: |
+            指定された航路画定IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+components:
+  schemas:
+    fallSpacePostRequestEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          description: 最大落下許容範囲ID
+          minLength: 36
+          maxLength: 36
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        numCrossSectionDivisions:
+          type: integer
+          description: 断面分割数 落下空間(断面)のX軸を分割する数 設定値+1で分割される
+        droneList:
+          type: array
+          description: 機体リスト
+          items:
+            $ref: "#/components/schemas/fallSpacePostRequestDroneEntity"
+      required:
+        - fallToleranceRangeId
+        - numCrossSectionDivisions
+        - droneList
+    fallSpacePostRequestDroneEntity:
+      type: object
+      properties:
+        aircraftInfoId:
+          type: integer
+          description: 機体情報ID
+        maker:
+          type: string
+          description: 製造メーカー名
+          minLength: 1
+          maxLength: 200
+        modelNumber:
+          type: string
+          description: 型式（モデル）
+          minLength: 1
+          maxLength: 200
+        name:
+          type: string
+          description: 機種名
+          minLength: 1
+          maxLength: 200
+        type:
+          type: string
+          description: 機体種別
+          minLength: 1
+          maxLength: 100
+        ip:
+          type: string
+          description: IP番号
+          minLength: 1
+          maxLength: 100
+        length:
+          type: integer
+          description: 機体長
+        weight:
+          type: integer
+          description: 重量
+        maximumTakeoffWeight:
+          type: integer
+          description: 最大離陸重量
+        maximumFlightTime:
+          type: integer
+          description: 最大飛行時間
+      required: 
+        - aircraftInfoId
+        - maker
+        - modelNumber
+        - name
+        - type
+        - ip
+        - length
+        - weight
+        - maximumTakeoffWeight
+        - maximumFlightTime
+    fallSpacePostResponseEntity:
+      type: object
+      properties:
+        airwayDeterminationId:
+          type: integer
+          description: |
+            航路画定IDを表すID
+
+            作成中の航路を一意に表すID
+
+            以降の航路作成系のAPIで必ず指定する
+      required: 
+        - airwayDeterminationId
+    fallSpaceCrossSectionPostRequestEntity:
+      type: object
+      properties:
+        airwayDeterminationId:
+          type: integer
+          description: 航路画定ID 作成中の航路を一意に表すID
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 LineString固定
+              example: LineString
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度順で記述
+              example: 
+                    - [139.84393417826334,35.64506348565499]
+                    - [139.8485177460986,35.64521500545736]
+              items:
+                type: array
+                items:
+                  type: number
+          required:
+            - type
+            - coordinates
+      required: 
+        - airwayDeterminationId
+        - geometry
+    fallSpaceCrossSectionPostResponseEntity:
+      type: object
+      properties:
+        fallSpaceCrossSectionId:
+          type: integer
+          description: 落下空間(断面)ID
+        data:
+          type: array
+          description: データ
+          example: 
+            - [139.84354370902838,35.66367882233067,100]
+            - [139.84453992240128,35.66366930498516,150]
+            - [139.84458094577673,35.66367406608012,200]
+            - [139.84530177283676,35.663659778755544,100]
+          items: 
+            type: array
+            items:
+              type: number
+      required:
+        - fallSpaceId
+        - data

@@ -1,0 +1,473 @@
+openapi: '3.0.3'
+info:
+  title: 航路の画定(A-1-2) API
+  description: 航路の設計時に使用するAPIを提供する。
+  version: '0.0.1'
+servers:
+  - url: http://localhost:8080/airway-design
+tags:
+  - name: FallToleranceRange
+paths:
+  /fall-tolerance-range:
+    get:
+      summary: 最大落下許容範囲取得
+      description: ドローン航路システムから、最大落下許容範囲情報を返却する。
+      tags:
+        - FallToleranceRange
+      operationId: FallToleranceRangeGet
+      parameters:
+        - name: businessNumber
+          in: query
+          description: 事業者番号
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+        - name: areaName
+          in: query
+          description: エリア名称
+          required: false
+          schema:
+            type: string
+            minLength: 0
+            maxLength: 200
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallToleranceRangeGetResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+  
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+
+    post:
+      summary: 最大落下許容範囲登録
+      description: 最大落下許容範囲をドローン航路システムに登録する。
+      tags:
+        - FallToleranceRange
+      operationId: FallToleranceRangePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/fallToleranceRangePostRequestEntity"
+      responses:
+        '201':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallToleranceRangePostResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+            
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合  
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+            
+            ・他のサービスへのネットワークアクセスに失敗した
+            
+            ・サーバ内部でロジックの例外が検出された
+    delete:
+      summary: 最大落下許容範囲削除
+      description: |
+        ドローン航路システムから、最大落下許容範囲情報を削除する。
+
+        最大落下許容範囲が既に航路画定で使用されてる場合は、削除は出来ないものとする。
+      tags:
+        - FallToleranceRange
+      operationId: FallToleranceRangeDelete
+      parameters:
+        - name: fallToleranceRangeId
+          in: query
+          description: 最大落下許容範囲ID
+          required: true
+          schema:
+            type: string
+            minLength: 36
+            maxLength: 36
+        - name: businessNumber
+          in: query
+          description: 事業者番号
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+      responses:
+        '204':
+          description: 正常終了
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合
+        '404': 
+          description: |
+            指定された事業者番号,最大落下許容範囲IDが、データベースに存在しない場合に返却する。
+        '409':
+          description: |
+            最大落下許容範囲が航路画定に使用されている場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+
+            ・他のサービスへのネットワークアクセスに失敗した
+
+            ・サーバ内部でロジックの例外が検出された
+
+  /fall-tolerance-range/{fallToleranceRangeId}/{businessNumber}:
+    get:
+      summary: 最大落下許容範囲情報の取得
+      description: ドローン航路システムから、指定された最大落下許容範囲ID,事業者番号をキーにした最大落下許容範囲情報を取得する。
+      tags:
+        - FallToleranceRange
+      operationId: FallToleranceRangeDetailGet
+      parameters:
+        - name: fallToleranceRangeId
+          in: path
+          description: 最大落下許容範囲ID
+          required: true
+          schema:
+            type: string
+            minLength: 36
+            maxLength: 36
+        - name: businessNumber
+          in: path
+          description: 事業者番号
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+      responses:
+        '200':
+          description: 正常終了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/fallToleranceRangeDetailGetResponseEntity"
+        '400':
+          description: |
+            パラメータに誤りがある場合に返却する。具体的には以下のケースを想定する。
+
+            ・必須指定されているパラメータが指定されていない場合
+
+            ・指定されたパラメータにバイト数の上限があり且つ、最大バイトサイズが上限を超えた場合
+        '404': 
+          description: |
+            指定された事業者番号,最大落下許容範囲IDが、データベースに存在しない場合に返却する。
+        '500':
+          description: |
+            サーバ内部にて主に以下に該当する問題が検知された場合に返却する。
+
+            ・他のサービスへのネットワークアクセスに失敗した
+
+            ・サーバ内部でロジックの例外が検出された
+
+components:
+  schemas:
+    fallToleranceRangeGetRequestEntity:
+      type: object
+      properties:
+        businessNumber:
+          type : string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+        areaName:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: エリア名称
+      required: 
+        - businessNumber
+    fallToleranceRangeGetResponseEntity:
+      type: object
+      properties:
+        fallToleranceRanges:
+          type: array
+          description: 最大落下許容範囲
+          items:
+            $ref: "#/components/schemas/fallToleranceRangeGetResponseItemEntity"
+      required:
+        - fallToleranceRanges
+    fallToleranceRangeGetResponseItemEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 最大落下許容範囲ID
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        name:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: 名称
+        areaName:
+          type: string
+          minLength: 0
+          maxLength: 200
+          description: エリア名称
+        airwayOperatorId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: エリア名称
+        airwayIdUse:
+          type: array
+          description: 使用中航路ID
+          items:
+            type: string
+            example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 Polygon固定
+              example: Polygon
+            coordinates:
+                type: array
+                description: 座標 配列内は経度,緯度,高度順で記述
+                items:
+                  type: array
+                  example:
+                    - [139.84425094162697,35.65649757318167]
+                    - [139.8506696707106,35.65611144123251]
+                    - [139.85103098834156,35.67572492318939]
+                    - [139.8603064948997,35.69311183099994]
+                    - [139.85495492073812,35.69407775293554]
+                    - [139.84484594816934,35.67678697870946]
+                    - [139.84425094162697,35.65649757318167]
+                  items:
+                    type: array
+                    items:
+                      type: number
+          required:
+            - type
+            - coordinates
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+        updatedAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+      required:
+        - fallToleranceRangeId
+        - airwayOperatorId
+        - airwayIdUse
+        - geometry
+        - createdAt
+        - updatedAt
+    fallToleranceRangePostRequestEntity:
+      type: object
+      properties:
+        businessNumber:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+        airwayOperatorId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 航路運営者ID
+        name:
+          type: string
+          maxLength: 200
+          description: 名称
+        areaName:
+          type: string
+          maxLength: 200
+          description: エリア名称 
+        elevationTerrain:
+          type: string
+          maxLength: 200
+          description: 最大標高・地形
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「Polygon」を設定
+              example: Polygon
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度順で記述
+              items:
+                type: array
+                example:
+                - [139.84425094162697,35.65649757318167]
+                - [139.8506696707106,35.65611144123251]
+                - [139.85103098834156,35.67572492318939]
+                - [139.8603064948997,35.69311183099994]
+                - [139.85495492073812,35.69407775293554]
+                - [139.84484594816934,35.67678697870946]
+                - [139.84425094162697,35.65649757318167]
+                items:
+                  type: array
+                  items:
+                    type: number
+          required:
+            - type
+            - coordinates
+      required: 
+        - businessNumber
+        - airwayOperatorId
+        - geometry
+    fallToleranceRangePostResponseEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 登録した際に発行されたID
+          example: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+        name:
+          type: string
+          maxLength: 200
+          description: 名称
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+      required: 
+        - fallToleranceRangeId
+        - createdAt
+    fallToleranceRangeDeleteRequestEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 最大落下許容範囲ID
+        businessNumber:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+      required:
+        - fallToleranceRangeId
+        - businessNumber
+    fallToleranceRangeDetailGetRequestEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 最大落下許容範囲ID
+        businessNumber:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+      required:
+        - fallToleranceRangeId
+        - businessNumber
+    fallToleranceRangeDetailGetResponseEntity:
+      type: object
+      properties:
+        fallToleranceRangeId:
+          type: string
+          minLength: 36
+          maxLength: 36
+          description: 最大落下許容範囲ID
+        businessNumber:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 事業者番号
+        airwayOperatorId:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: 航路運営者ID
+        name:
+          type: string
+          maxLength: 200
+          description: 名称
+        areaName:
+          type: string
+          maxLength: 200
+          description: エリア名称 
+        elevationTerrain:
+          type: string
+          maxLength: 200
+          description: 最大標高・地形
+        geometry:
+          type: object
+          description: ジオメトリ geomjson形式のオブジェクト
+          properties:
+            type:
+              type: string
+              description: 種別 固定値「Polygon」を設定
+              example: Polygon
+            coordinates:
+              type: array
+              description: 座標 配列内は経度,緯度順で記述
+              items:
+                type: array
+                example:
+                - [139.84425094162697,35.65649757318167]
+                - [139.8506696707106,35.65611144123251]
+                - [139.85103098834156,35.67572492318939]
+                - [139.8603064948997,35.69311183099994]
+                - [139.85495492073812,35.69407775293554]
+                - [139.84484594816934,35.67678697870946]
+                - [139.84425094162697,35.65649757318167]
+                items:
+                  type: array
+                  items:
+                    type: number
+          required:
+            - type
+            - coordinates
+        createdAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+          description: 登録日時
+        updatedAt:
+          type: string
+          example: '2020-01-31T23:59:59+09:00'
+          format: date-time
+          description: 更新日時
+      required: 
+        - fallToleranceRangeId
+        - businessNumber
+        - airwayOperatorId
+        - geometry
+        - createdAt
+        - updatedAt
+        

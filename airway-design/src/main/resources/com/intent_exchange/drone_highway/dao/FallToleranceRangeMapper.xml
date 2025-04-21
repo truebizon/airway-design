@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.FallToleranceRangeMapper">
+
+  <resultMap id="BaseResultMap" type="com.intent_exchange.drone_highway.model.FallToleranceRange">
+    <id column="fall_tolerance_range_id" jdbcType="VARCHAR" property="fallToleranceRangeId" />
+    <result column="business_number" jdbcType="VARCHAR" property="businessNumber" />
+    <result column="airway_operator_id" jdbcType="VARCHAR" property="airwayOperatorId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="area_name" jdbcType="VARCHAR" property="areaName" />
+    <result column="geometry" jdbcType="OTHER" property="geometry" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+    <result column="elevation_terrain" jdbcType="VARCHAR" property="elevationTerrain" />
+    <result column="delete" jdbcType="BIT" property="delete" />
+    <result column="json" jdbcType="VARCHAR" property="json" />
+  </resultMap>
+  
+  <sql id="Base_Column_List">
+    fall_tolerance_range_id, business_number, airway_operator_id, name, area_name, geometry, 
+    created_at, updated_at, elevation_terrain, delete,
+    ST_AsGeoJSON(fall_tolerance_range.geometry) AS json
+  </sql>
+  
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from fall_tolerance_range
+    where fall_tolerance_range_id = #{fallToleranceRangeId,jdbcType=VARCHAR}
+  </select>
+  
+  <insert id="insert" parameterType="com.intent_exchange.drone_highway.model.FallToleranceRange">
+    insert into fall_tolerance_range (
+      fall_tolerance_range_id, 
+      business_number, 
+      airway_operator_id,
+      name,
+      area_name,
+      geometry,
+      created_at,
+      updated_at,
+      elevation_terrain, 
+      delete)
+    values (
+      #{fallToleranceRangeId,jdbcType=VARCHAR}, 
+      #{businessNumber,jdbcType=VARCHAR}, 
+      #{airwayOperatorId,jdbcType=VARCHAR},
+      #{name,jdbcType=VARCHAR},
+      #{areaName,jdbcType=VARCHAR},
+      ST_GeomFromGeoJSON(#{json,jdbcType=VARCHAR}),
+      #{createdAt,jdbcType=TIMESTAMP},
+      #{updatedAt,jdbcType=TIMESTAMP},
+      #{elevationTerrain,jdbcType=VARCHAR},
+      #{delete,jdbcType=BIT}
+      )
+  </insert>
+  
+  <update id="updateByPrimaryKey" parameterType="com.intent_exchange.drone_highway.model.FallToleranceRange">
+    update fall_tolerance_range
+    set business_number = #{businessNumber,jdbcType=VARCHAR},
+      airway_operator_id = #{airwayOperatorId,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      area_name = #{areaName,jdbcType=VARCHAR},
+      geometry = ST_GeomFromGeoJSON(#{json,jdbcType=VARCHAR}),
+      created_at = #{createdAt,jdbcType=TIMESTAMP},
+      updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      elevation_terrain = #{elevationTerrain,jdbcType=VARCHAR},
+      delete = #{delete,jdbcType=BIT}
+    where fall_tolerance_range_id = #{fallToleranceRangeId,jdbcType=VARCHAR}
+  </update>
+  
+  <resultMap id="selectByBusinessNumberMap" type="com.intent_exchange.drone_highway.model.FallToleranceRangeAirwayIdUse">
+    <id     column="fall_tolerance_range_id"  property="fallToleranceRangeId" />
+    <result column="name"                     property="name" />
+    <result column="area_name"                property="areaName" />
+    <result column="airway_operator_id"       property="airwayOperatorId" />
+    <result column="json"                     property="json" />
+    <result column="created_at"               property="createdAt" />
+    <result column="updated_at"               property="updatedAt" />
+    <collection property="airwayIdUse" javaType="list" ofType="string">
+      <result column="airway_id" />
+    </collection>
+  </resultMap>
+  <select id="selectByConditions" parameterType="com.intent_exchange.drone_highway.model.FallToleranceRange" resultMap="selectByBusinessNumberMap">
+    SELECT
+      fall_tolerance_range.fall_tolerance_range_id, 
+      fall_tolerance_range.name,
+      fall_tolerance_range.area_name,
+      fall_tolerance_range.airway_operator_id,
+      ST_AsGeoJSON(fall_tolerance_range.geometry) AS json,
+      fall_tolerance_range.created_at,
+      fall_tolerance_range.updated_at,
+      airway.airway_id
+    FROM
+      fall_tolerance_range
+    LEFT JOIN
+      airway_determination
+    ON
+      airway_determination.fall_tolerance_range_id = fall_tolerance_range.fall_tolerance_range_id AND
+      airway_determination.delete IS NOT TRUE 
+    LEFT JOIN
+      airway
+    ON
+      airway.airway_determination_id = airway_determination.airway_determination_id
+    <where>
+      <if test="businessNumber != null and businessNumber != ''">
+        fall_tolerance_range.business_number = #{businessNumber,jdbcType=VARCHAR}
+      </if>
+      <if test="delete != null and !delete">
+        AND fall_tolerance_range.delete IS NOT TRUE
+      </if>
+      <if test="areaName != null and areaName != ''">
+        AND fall_tolerance_range.area_name = #{areaName,jdbcType=VARCHAR} 
+      </if>
+    </where>
+  </select>
+
+  <select id="selectForOperatorId" parameterType="java.lang.String" resultType="java.lang.String">
+    SELECT
+      fall_tolerance_range.airway_operator_id
+    FROM
+      fall_tolerance_range
+    WHERE 
+      fall_tolerance_range.business_number = #{businessNumber,jdbcType=VARCHAR} AND
+      fall_tolerance_range.delete IS NOT TRUE 
+	LIMIT 1
+  </select>
+
+  <select id="selectLockByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    SELECT
+      <include refid="Base_Column_List" />
+    FROM 
+      fall_tolerance_range
+    WHERE 
+      fall_tolerance_range_id = #{fallToleranceRangeId,jdbcType=VARCHAR}
+    FOR UPDATE NOWAIT
+  </select>
+
+</mapper>

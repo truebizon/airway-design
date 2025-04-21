@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.AirwaySectionGeometryMapper">
+  <!-- 動的座標を利用するクエリのマッピングを追加 -->
+  <select id="selectAirwayIdsByPolygon" resultType="java.lang.String" parameterType="map">
+    SELECT DISTINCT airway_id
+    FROM airway_section_geometry
+    WHERE ST_Intersects(
+        ST_Force2D(geometry),
+        ST_GeomFromText(
+            'POLYGON((${coordinates}))',
+            4326
+        )
+    )
+  </select>
+</mapper>

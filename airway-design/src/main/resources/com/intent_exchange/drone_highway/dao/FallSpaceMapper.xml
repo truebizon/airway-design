@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intent_exchange.drone_highway.dao.FallSpaceMapper">
+  <resultMap id="BaseResultMap" type="com.intent_exchange.drone_highway.model.FallSpace">
+    <id column="fall_space_id" jdbcType="INTEGER" property="fallSpaceId" />
+    <result column="airway_determination_id" jdbcType="INTEGER" property="airwayDeterminationId" />
+    <result column="despersion_node_id" jdbcType="INTEGER" property="despersionNodeId" />
+    <result column="data" jdbcType="VARCHAR" property="data" />
+    <result column="created_at" jdbcType="TIMESTAMP" property="createdAt" />
+    <result column="updated_at" jdbcType="TIMESTAMP" property="updatedAt" />
+  </resultMap>
+  <update id="updateByPrimaryKeySelective" parameterType="com.intent_exchange.drone_highway.model.FallSpace">
+    update fall_space
+    <set>
+      <if test="airwayDeterminationId != null">
+        airway_determination_id = #{airwayDeterminationId,jdbcType=INTEGER},
+      </if>
+      <if test="despersionNodeId != null">
+        despersion_node_id = #{despersionNodeId,jdbcType=INTEGER},
+      </if>
+      <if test="data != null">
+        data = #{data,jdbcType=VARCHAR},
+      </if>
+      <if test="createdAt != null">
+        created_at = #{createdAt,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updatedAt != null">
+        updated_at = #{updatedAt,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where fall_space_id = #{fallSpaceId,jdbcType=INTEGER}
+  </update>
+  
+  <insert id="insert" parameterType="com.intent_exchange.drone_highway.model.FallSpace">
+    insert into fall_space (fall_space_id, airway_determination_id, 
+      despersion_node_id, 
+      data, created_at, updated_at
+      )
+    values (#{fallSpaceId,jdbcType=INTEGER}, #{airwayDeterminationId,jdbcType=INTEGER}, 
+      #{despersionNodeId,jdbcType=INTEGER}, 
+      #{data,jdbcType=VARCHAR}, #{createdAt,jdbcType=TIMESTAMP}, #{updatedAt,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+</mapper>
