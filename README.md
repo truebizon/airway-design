@@ -49,6 +49,11 @@ bash ./build.sh
 docker compose up -d
 ```
 
+### Dashboard
+
+コンテナ起動後、ブラウザで `http://localhost:8080/dashboard/` にアクセスすると、
+`/airway?all=true` API を利用した簡易ダッシュボードを確認できます。
+
 ## 使用方法
 
 ### Tips

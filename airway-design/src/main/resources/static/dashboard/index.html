@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Airway Dashboard</title>
+<style>
+body{font-family:Arial, sans-serif;margin:20px;}
+table{border-collapse:collapse;width:100%;}
+th,td{border:1px solid #ccc;padding:8px;text-align:left;}
+</style>
+</head>
+<body>
+<h1>航路一覧</h1>
+<p>下の表には <code>/airway?all=true</code> API から取得した航路情報を表示します。</p>
+<table id="airway-table">
+<thead><tr><th>Airway ID</th><th>航路名</th><th>飛行目的</th></tr></thead>
+<tbody></tbody>
+</table>
+<script>
+async function loadAirways() {
+  try {
+    const res = await fetch('/airway?all=true');
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const tbody = document.querySelector('#airway-table tbody');
+    tbody.innerHTML = '';
+    const airways = data.airway?.airways || [];
+    airways.forEach(a => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${a.airwayId||''}</td><td>${a.airwayName||''}</td><td>${a.flightPurpose||''}</td>`;
+      tbody.appendChild(tr);
+    });
+  } catch(err) {
+    document.body.insertAdjacentHTML('beforeend', `<p style="color:red">${err}</p>`);
+  }
+}
+loadAirways();
+</script>
+</body>
+</html>
